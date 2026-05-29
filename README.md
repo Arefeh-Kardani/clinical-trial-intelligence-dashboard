@@ -1,3 +1,4 @@
+clinical-trial-intelligence-dashboard
 # 📊 Breast Cancer Clinical Trial Intelligence Dashboard
 
 ### **Project Overview**
@@ -38,6 +39,6 @@ You can view the interactive dashboard live here:
 
 ---
 
-### **🩺 About the Author**
-**Arefeh Kardani, Dr. rer. nat. (she/her)** *Data & BI Analyst | Pharmaceutical Biology Scientist* [cite: 1, 9]
+### **About the Author**
+**Arefeh Kardani, Dr. rer. nat. (she/her)** *Data & BI Analyst | Life Scientist* [cite: 1, 9]
 
