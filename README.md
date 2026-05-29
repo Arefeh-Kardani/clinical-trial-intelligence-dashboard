@@ -34,7 +34,7 @@ Due to the large file size of the full clinical dataset (approx. 28MB), the raw 
 
 ### **🚀 Live Demo**
 You can view the interactive dashboard live here:
-👉 **[INSERT YOUR GITHUB PAGES LINK HERE]**
+👉 **[https://arefeh-kardani.github.io/clinical-trial-intelligence-dashboard/]**
 
 ---
 
