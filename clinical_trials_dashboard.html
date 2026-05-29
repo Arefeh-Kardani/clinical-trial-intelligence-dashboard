@@ -1,0 +1,177 @@
+
+<h2 class="sr-only">Clinical Trials Dashboard: Top 10 sponsors, phase distribution, and intervention types across 7,537 trials.</h2>
+
+<style>
+  .dash-header { padding: 1.5rem 0 1rem; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 1.5rem; }
+  .dash-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+  .kpi { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 1rem; }
+  .kpi-label { font-size: 12px; color: var(--color-text-secondary); margin: 0 0 4px; }
+  .kpi-value { font-size: 22px; font-weight: 500; color: var(--color-text-primary); margin: 0; }
+  .kpi-sub { font-size: 11px; color: var(--color-text-tertiary); margin: 2px 0 0; }
+  .section-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 1rem; }
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .chart-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; }
+  .chart-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 1rem; }
+  .legend-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; font-size: 12px; color: var(--color-text-secondary); }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .interv-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; }
+  .interv-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .interv-label { font-size: 13px; color: var(--color-text-primary); width: 140px; flex-shrink: 0; }
+  .interv-bar-bg { flex: 1; height: 8px; background: var(--color-background-secondary); border-radius: 4px; overflow: hidden; }
+  .interv-bar-fill { height: 100%; border-radius: 4px; }
+  .interv-count { font-size: 12px; color: var(--color-text-secondary); width: 50px; text-align: right; flex-shrink: 0; }
+  .dash-footer { font-size: 11px; color: var(--color-text-tertiary); padding-top: 1rem; border-top: 0.5px solid var(--color-border-tertiary); }
+</style>
+
+<div class="dash-header">
+  <p style="font-size: 11px; color: var(--color-text-secondary); margin: 0 0 4px;">CLINICAL TRIALS INTELLIGENCE</p>
+  <h1 style="font-size: 20px; font-weight: 500; margin: 0; color: var(--color-text-primary);">Global Trial Portfolio Overview</h1>
+</div>
+
+<div class="dash-kpis">
+  <div class="kpi">
+    <p class="kpi-label">Total trials</p>
+    <p class="kpi-value">7,537</p>
+    <p class="kpi-sub">in dataset</p>
+  </div>
+  <div class="kpi">
+    <p class="kpi-label">Unique sponsors</p>
+    <p class="kpi-value">2,841</p>
+    <p class="kpi-sub">organizations</p>
+  </div>
+  <div class="kpi">
+    <p class="kpi-label">Top phase</p>
+    <p class="kpi-value">Phase 2</p>
+    <p class="kpi-sub">1,450 trials (19%)</p>
+  </div>
+  <div class="kpi">
+    <p class="kpi-label">Most used intervention</p>
+    <p class="kpi-value">Drug</p>
+    <p class="kpi-sub">7,163 mentions</p>
+  </div>
+</div>
+
+<div class="charts-grid">
+  <div class="chart-card">
+    <p class="chart-title">Top 10 sponsors by trial count</p>
+    <div style="position: relative; width: 100%; height: 320px;">
+      <canvas id="sponsorChart" role="img" aria-label="Horizontal bar chart showing top 10 clinical trial sponsors. NCI leads with 221 trials, followed by AstraZeneca at 148.">Top sponsors: NCI 221, AstraZeneca 148, MSK 147, Roche 145, Novartis 136, MDA 109, Pfizer 101, Mayo 98, Dana-Farber 80, Alliance 72.</canvas>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <p class="chart-title">Trial phase distribution</p>
+    <div class="legend-row" id="phaseLegend"></div>
+    <div style="position: relative; width: 100%; height: 260px;">
+      <canvas id="phaseChart" role="img" aria-label="Pie chart of trial phases. Phase 2 is the largest at 41%, Phase 1 at 25%, Phase 3 at 19%.">Phase 2: 1450 (41%), Phase 1: 869 (25%), Phase 3: 667 (19%), Phase 1/2: 309 (9%), Phase 4: 159 (4%), Early Phase 1: 115 (3%), Phase 2/3: 51 (1%).</canvas>
+    </div>
+  </div>
+</div>
+
+<div class="interv-card">
+  <p class="chart-title" style="margin-bottom: 1.25rem;">Intervention type distribution</p>
+  <div id="intervBars"></div>
+</div>
+
+<p class="dash-footer">Source: ClinicalTrials.gov export &nbsp;·&nbsp; 7,537 records analyzed &nbsp;·&nbsp; Counts reflect tagged categories per study entry</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const sponsorData = {
+  labels: ['NCI','AstraZeneca','Mem. Sloan Kettering','Hoffmann-La Roche','Novartis','MD Anderson','Pfizer','Mayo Clinic','Dana-Farber','Alliance for Clin. Trials'],
+  values: [221,148,147,145,136,109,101,98,80,72]
+};
+
+const phaseData = {
+  labels: ['Phase 2','Phase 1','Phase 3','Phase 1|2','Phase 4','Early Phase 1','Phase 2|3'],
+  values: [1450,869,667,309,159,115,51],
+  colors: ['#185FA5','#3266ad','#378ADD','#5E9BD3','#85B7EB','#A8CCEF','#B5D4F4']
+};
+
+const intervData = [
+  { label: 'Drug', count: 7163, color: '#185FA5' },
+  { label: 'Other', count: 2427, color: '#3B6D11' },
+  { label: 'Behavioral', count: 1453, color: '#BA7517' },
+  { label: 'Procedure', count: 1423, color: '#993C1D' },
+  { label: 'Biological', count: 681, color: '#533490' },
+  { label: 'Device', count: 672, color: '#0F6E56' },
+  { label: 'Radiation', count: 415, color: '#A32D2D' },
+  { label: 'Diagnostic test', count: 172, color: '#5F5E5A' },
+  { label: 'Dietary supplement', count: 158, color: '#854F0B' },
+  { label: 'Genetic', count: 149, color: '#993556' }
+];
+
+new Chart(document.getElementById('sponsorChart'), {
+  type: 'bar',
+  data: {
+    labels: sponsorData.labels,
+    datasets: [{
+      data: sponsorData.values,
+      backgroundColor: '#185FA5',
+      borderRadius: 4,
+      borderSkipped: false
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      callbacks: { label: ctx => ' ' + ctx.parsed.x + ' trials' }
+    }},
+    scales: {
+      x: { grid: { color: 'rgba(128,128,128,0.12)' }, ticks: { font: { size: 11 }, color: '#888780' } },
+      y: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#5F5E5A' } }
+    }
+  }
+});
+
+const total = phaseData.values.reduce((a,b) => a+b, 0);
+const legendEl = document.getElementById('phaseLegend');
+phaseData.labels.forEach((label, i) => {
+  const pct = Math.round(phaseData.values[i] / total * 100);
+  legendEl.innerHTML += `<span class="legend-item"><span class="legend-swatch" style="background:${phaseData.colors[i]}"></span>${label} ${pct}%</span>`;
+});
+
+new Chart(document.getElementById('phaseChart'), {
+  type: 'doughnut',
+  data: {
+    labels: phaseData.labels,
+    datasets: [{
+      data: phaseData.values,
+      backgroundColor: phaseData.colors,
+      borderWidth: 2,
+      borderColor: 'transparent',
+      hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '62%',
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ' ' + ctx.label + ': ' + ctx.parsed.toLocaleString() + ' (' + Math.round(ctx.parsed / total * 100) + '%)'
+        }
+      }
+    }
+  }
+});
+
+const maxCount = intervData[0].count;
+const barsEl = document.getElementById('intervBars');
+intervData.forEach(item => {
+  const pct = Math.round(item.count / maxCount * 100);
+  barsEl.innerHTML += `
+    <div class="interv-row">
+      <span class="interv-label">${item.label}</span>
+      <div class="interv-bar-bg">
+        <div class="interv-bar-fill" style="width: ${pct}%; background: ${item.color};"></div>
+      </div>
+      <span class="interv-count">${item.count.toLocaleString()}</span>
+    </div>`;
+});
+</script>
